@@ -1,5 +1,6 @@
 package com.project.aiprojectrecommender.entity;
-import java.util.*;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.project.aiprojectrecommender.enums.Proficiency;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,10 +27,12 @@ public class UserSkill {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "skill_id", nullable = false)
+    @JsonBackReference
     private Skill skill;
 
     @Enumerated(EnumType.STRING)
@@ -39,12 +42,11 @@ public class UserSkill {
     @Column(nullable = false)
     private Boolean verified;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
-    @OneToMany(mappedBy = "skill", cascade = CascadeType.ALL)
-    private List<UserSkill> userSkills;
+    @Column(name = "updated_at", nullable = false, updatable = true)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }

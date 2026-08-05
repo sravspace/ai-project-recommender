@@ -60,9 +60,11 @@ public class UserProfile {
     @Column(name = "profile_completed")
     private Boolean profileCompleted;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at", nullable = false, updatable = true)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }
