@@ -1,5 +1,6 @@
 package com.project.aiprojectrecommender.auth.security;
 
+import com.project.aiprojectrecommender.entity.User;
 import com.project.aiprojectrecommender.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,47 +31,80 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        System.out.println("\n======================================");
+        System.out.println("Incoming Request: " + request.getMethod() + " " + request.getRequestURI());
+
         final String authHeader = request.getHeader("Authorization");
 
+        System.out.println("Authorization Header: " + authHeader);
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+
+            System.out.println("No Bearer token found. Skipping JWT authentication.");
 
             filterChain.doFilter(request, response);
             return;
 
         }
 
-        String token = authHeader.substring(7);
+        try {
 
-        String email = jwtService.extractEmail(token);
+            String token = authHeader.substring(7);
 
-        if (email != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+            System.out.println("JWT Token:");
+            System.out.println(token);
 
-            UserDetails userDetails =
-                    userDetailsService.loadUserByUsername(email);
+            String email = jwtService.extractEmail(token);
 
-            if (jwtService.isTokenValid(
-                    token,
-                    userRepository.findByEmail(email).orElseThrow())) {
+            System.out.println("Extracted Email: " + email);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
+            if (email != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                authentication.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request));
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
 
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authentication);
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("User not found in database."));
+
+                boolean valid = jwtService.isTokenValid(token, user);
+
+                System.out.println("Token Valid: " + valid);
+
+                if (valid) {
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request));
+
+                    SecurityContextHolder.getContext()
+                            .setAuthentication(authentication);
+
+                    System.out.println("Authentication stored in SecurityContext.");
+
+                } else {
+
+                    System.out.println("JWT validation failed.");
+
+                }
 
             }
+
+        } catch (Exception e) {
+
+            System.out.println("JWT Exception Occurred:");
+            e.printStackTrace();
 
         }
 
         filterChain.doFilter(request, response);
 
     }
+
 }

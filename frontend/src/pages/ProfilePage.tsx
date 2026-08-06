@@ -12,6 +12,12 @@ interface Profile {
     linkedinUrl: string;
 }
 
+interface Skill {
+    id: number;
+    name: string;
+    category: string;
+}
+
 export default function ProfilePage() {
 
     const [profile, setProfile] = useState<Profile>({
@@ -27,15 +33,31 @@ export default function ProfilePage() {
 
     const [loading, setLoading] = useState(true);
 
+    const [skills, setSkills] = useState<Skill[]>([]);
+    const [selectedSkillId, setSelectedSkillId] = useState("");
+    const [selectedSkills, setSelectedSkills] = useState<Skill[]>([]);
+
     useEffect(() => {
 
-        async function loadProfile() {
+        async function loadData() {
 
             try {
 
-                const response = await api.get("/profile/me");
+                const profileResponse = await api.get("/profile/me");
+                setProfile(profileResponse.data);
 
-                setProfile(response.data);
+                const skillsResponse = await api.get("/skills");
+                setSkills(skillsResponse.data);
+
+                const mySkillsResponse = await api.get("/profile/skills");
+
+                setSelectedSkills(
+                    mySkillsResponse.data.map((s: any) => ({
+                        id: s.skillId,
+                        name: s.skillName,
+                        category: s.category
+                    }))
+                );
 
             } catch (error) {
 
@@ -49,7 +71,7 @@ export default function ProfilePage() {
 
         }
 
-        loadProfile();
+        loadData();
 
     }, []);
 
@@ -71,6 +93,49 @@ export default function ProfilePage() {
 
     }
 
+    async function handleAddSkill() {
+
+        if (!selectedSkillId) return;
+
+        try {
+
+            await api.post("/profile/skills", {
+                skillId: Number(selectedSkillId),
+                proficiency: "BEGINNER"
+            });
+
+            const mySkillsResponse = await api.get("/profile/skills");
+
+            setSelectedSkills(
+                mySkillsResponse.data.map((s: any) => ({
+                    id: s.skillId,
+                    name: s.skillName,
+                    category: s.category
+                }))
+            );
+
+            setSelectedSkillId("");
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert("Failed to add skill.");
+
+        }
+
+    }
+
+    function removeSkill(id: number) {
+
+        setSelectedSkills(
+            selectedSkills.filter(
+                skill => skill.id !== id
+            )
+        );
+
+    }
+
     if (loading) {
         return <h2>Loading...</h2>;
     }
@@ -84,9 +149,7 @@ export default function ProfilePage() {
             <br />
 
             <label>Full Name</label>
-
             <br />
-
             <input
                 value={profile.fullName}
                 onChange={(e) =>
@@ -101,9 +164,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>Bio</label>
-
             <br />
-
             <textarea
                 value={profile.bio}
                 onChange={(e) =>
@@ -119,9 +180,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>Experience Level</label>
-
             <br />
-
             <select
                 value={profile.experienceLevel}
                 onChange={(e) =>
@@ -141,9 +200,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>Goals</label>
-
             <br />
-
             <input
                 value={profile.goals}
                 onChange={(e) =>
@@ -158,9 +215,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>Interests</label>
-
             <br />
-
             <input
                 value={profile.interests}
                 onChange={(e) =>
@@ -175,9 +230,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>Time Availability</label>
-
             <br />
-
             <input
                 value={profile.timeAvailability}
                 onChange={(e) =>
@@ -192,9 +245,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>GitHub URL</label>
-
             <br />
-
             <input
                 value={profile.githubUrl}
                 onChange={(e) =>
@@ -209,9 +260,7 @@ export default function ProfilePage() {
             <br /><br />
 
             <label>LinkedIn URL</label>
-
             <br />
-
             <input
                 value={profile.linkedinUrl}
                 onChange={(e) =>
@@ -222,6 +271,69 @@ export default function ProfilePage() {
                 }
                 style={{ width: "100%", padding: "8px" }}
             />
+
+            <br /><br />
+
+            <h2>Skills</h2>
+
+            <select
+                value={selectedSkillId}
+                onChange={(e) => setSelectedSkillId(e.target.value)}
+                style={{
+                    width: "100%",
+                    padding: "8px"
+                }}
+            >
+                <option value="">Select Skill</option>
+
+                {skills.map(skill => (
+                    <option
+                        key={skill.id}
+                        value={skill.id}
+                    >
+                        {skill.name} ({skill.category})
+                    </option>
+                ))}
+            </select>
+
+            <br /><br />
+
+            <button
+                onClick={handleAddSkill}
+            >
+                Add Skill
+            </button>
+
+            <br /><br />
+
+            {selectedSkills.map(skill => (
+
+                <div
+                    key={skill.id}
+                    style={{
+                        display: "inline-block",
+                        padding: "8px 12px",
+                        margin: "5px",
+                        background: "#1976d2",
+                        color: "white",
+                        borderRadius: "20px"
+                    }}
+                >
+                    {skill.name}
+
+                    <button
+                        onClick={() => removeSkill(skill.id)}
+                        style={{
+                            marginLeft: "10px",
+                            cursor: "pointer"
+                        }}
+                    >
+                        ✕
+                    </button>
+
+                </div>
+
+            ))}
 
             <br /><br />
 
