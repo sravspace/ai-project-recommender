@@ -1,32 +1,22 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../api/axios";
 
 interface Profile {
-
     fullName: string;
-
     bio: string;
-
     experienceLevel: string;
-
     goals: string;
-
     interests: string;
-
     timeAvailability: string;
-
     githubUrl: string;
-
     linkedinUrl: string;
-
     profileCompleted: boolean;
-
 }
 
 export default function Dashboard() {
 
     const [profile, setProfile] = useState<Profile | null>(null);
-
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -36,7 +26,6 @@ export default function Dashboard() {
             try {
 
                 const response = await api.get("/profile/me");
-
                 setProfile(response.data);
 
             } catch (error) {
@@ -56,45 +45,90 @@ export default function Dashboard() {
     }, []);
 
     if (loading) {
-
         return <h2>Loading...</h2>;
-
     }
 
     if (!profile) {
-
         return <h2>Failed to load profile.</h2>;
-
     }
 
     return (
 
-        <div style={{ padding: "40px" }}>
+        <div
+            style={{
+                maxWidth: "900px",
+                margin: "40px auto",
+                padding: "30px",
+                border: "1px solid #444",
+                borderRadius: "12px",
+            }}
+        >
 
             <h1>Welcome, {profile.fullName}! 👋</h1>
 
-            <hr />
+            <div
+                style={{
+                    marginTop: "30px",
+                    padding: "20px",
+                    border: "1px solid #555",
+                    borderRadius: "10px",
+                }}
+            >
 
-            <h3>Bio</h3>
-            <p>{profile.bio || "-"}</p>
+                <h2>Profile</h2>
 
-            <h3>Experience</h3>
-            <p>{profile.experienceLevel || "-"}</p>
+                <p><strong>Bio:</strong> {profile.bio || "-"}</p>
 
-            <h3>Goals</h3>
-            <p>{profile.goals || "-"}</p>
+                <p><strong>Experience:</strong> {profile.experienceLevel || "-"}</p>
 
-            <h3>Interests</h3>
-            <p>{profile.interests || "-"}</p>
+                <p><strong>Goals:</strong> {profile.goals || "-"}</p>
 
-            <h3>Time Availability</h3>
-            <p>{profile.timeAvailability || "-"}</p>
+                <p><strong>Interests:</strong> {profile.interests || "-"}</p>
 
-            <h3>GitHub</h3>
-            <p>{profile.githubUrl || "-"}</p>
+                <p><strong>Time Availability:</strong> {profile.timeAvailability || "-"}</p>
 
-            <h3>LinkedIn</h3>
-            <p>{profile.linkedinUrl || "-"}</p>
+            </div>
+
+            <div
+                style={{
+                    marginTop: "20px",
+                    padding: "20px",
+                    border: "1px solid #555",
+                    borderRadius: "10px",
+                }}
+            >
+
+                <h2>Links</h2>
+
+                <p>
+                    <strong>GitHub:</strong>{" "}
+                    {profile.githubUrl || "-"}
+                </p>
+
+                <p>
+                    <strong>LinkedIn:</strong>{" "}
+                    {profile.linkedinUrl || "-"}
+                </p>
+
+            </div>
+
+            <div style={{ marginTop: "30px" }}>
+
+                <Link to="/profile">
+
+                    <button
+                        style={{
+                            padding: "10px 20px",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                        }}
+                    >
+                        Edit Profile
+                    </button>
+
+                </Link>
+
+            </div>
 
         </div>
 
