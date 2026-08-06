@@ -1,10 +1,7 @@
 package com.project.aiprojectrecommender.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
 
 @Entity
 @Table(name = "skills")
@@ -22,10 +19,7 @@ public class Skill {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column
+    @Column(length = 50)
     private String category;
 
-    @OneToMany(mappedBy = "skill", cascade = CascadeType.ALL)
-    @JsonManagedReference
-    private List<UserSkill> userSkills;
 }
