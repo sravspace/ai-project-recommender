@@ -12,10 +12,11 @@ function App() {
     <BrowserRouter>
       <Routes>
 
+        {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<RegisterPage />} />
 
-        <Route path="/register" element={<RegisterPage />} />
-
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
