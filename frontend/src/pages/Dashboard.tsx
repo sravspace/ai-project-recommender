@@ -102,6 +102,7 @@ export default function Dashboard() {
         >
             <h1>Welcome, {profile.fullName}! 👋</h1>
 
+            {/* PROFILE */}
             <div
                 style={{
                     marginTop: "30px",
@@ -136,6 +137,7 @@ export default function Dashboard() {
                 </p>
             </div>
 
+            {/* LINKS */}
             <div
                 style={{
                     marginTop: "20px",
@@ -157,6 +159,7 @@ export default function Dashboard() {
                 </p>
             </div>
 
+            {/* RECOMMENDATIONS */}
             <div style={{ marginTop: "40px" }}>
                 <h2>Recommended Projects</h2>
 
@@ -187,68 +190,223 @@ export default function Dashboard() {
 
                                 <p>{project.description}</p>
 
+                                {/* DIFFICULTY */}
                                 <p>
                                     <strong>Difficulty:</strong>{" "}
                                     {project.difficulty}
                                 </p>
 
-                                <p>
-                                    <strong>Estimated time:</strong>{" "}
-                                    {project.estimatedTime}
-                                </p>
-
+                                {/* TIME */}
                                 <div
-    style={{
-        marginTop: "20px",
-        padding: "16px",
-        border: "1px solid #b45309",
-        borderRadius: "10px",
-        backgroundColor: "rgba(180, 83, 9, 0.08)",
-    }}
->
-    <h4
-        style={{
-            marginTop: 0,
-            marginBottom: "12px",
-        }}
-    >
-        Skill Gaps
-    </h4>
+                                    style={{
+                                        marginTop: "15px",
+                                        padding: "15px",
+                                        border: "1px solid #555",
+                                        borderRadius: "10px",
+                                    }}
+                                >
+                                    <h4
+                                        style={{
+                                            marginTop: 0,
+                                            marginBottom: "10px",
+                                        }}
+                                    >
+                                        Estimated Time
+                                    </h4>
 
-    <div
-        style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "8px",
-        }}
-    >
-        {project.skillsToLearn.map(
-            (skill, skillIndex) => (
-                <span
-                    key={skillIndex}
-                    style={{
-                        padding: "6px 10px",
-                        border: "1px solid #b45309",
-                        borderRadius: "20px",
-                        fontSize: "14px",
-                    }}
-                >
-                    {skill}
-                </span>
-            )
-        )}
-    </div>
-</div>
-                              
+                                    <p>
+                                        <strong>Learning:</strong>{" "}
+                                        {project.estimatedTime.learningHours}{" "}
+                                        hours
+                                    </p>
 
-                                <div>
+                                    <p>
+                                        <strong>Building:</strong>{" "}
+                                        {project.estimatedTime.buildHours}{" "}
+                                        hours
+                                    </p>
+
+                                    <p>
+                                        <strong>Total:</strong>{" "}
+                                        {project.estimatedTime.totalWeeks}{" "}
+                                        weeks
+                                    </p>
+                                </div>
+
+                                {/* FEASIBILITY */}
+                                <div
+                                    style={{
+                                        marginTop: "15px",
+                                        padding: "15px",
+                                        border: "1px solid #555",
+                                        borderRadius: "10px",
+                                    }}
+                                >
+                                    <h4
+                                        style={{
+                                            marginTop: 0,
+                                            marginBottom: "10px",
+                                        }}
+                                    >
+                                        Why This Is Feasible
+                                    </h4>
+
+                                    <p style={{ marginBottom: 0 }}>
+                                        {project.feasibilitySummary}
+                                    </p>
+                                </div>
+
+                                {/* WHY IT FITS */}
+                                <div style={{ marginTop: "20px" }}>
+                                    <h4>Why It Fits</h4>
+
+                                    <ul>
+                                        {project.whyItFits.map(
+                                            (reason, reasonIndex) => (
+                                                <li key={reasonIndex}>
+                                                    {reason}
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* SKILL GAPS */}
+                                <div
+                                    style={{
+                                        marginTop: "20px",
+                                        padding: "16px",
+                                        border: "1px solid #b45309",
+                                        borderRadius: "10px",
+                                        backgroundColor:
+                                            "rgba(180, 83, 9, 0.08)",
+                                    }}
+                                >
+                                    <h4
+                                        style={{
+                                            marginTop: 0,
+                                            marginBottom: "12px",
+                                        }}
+                                    >
+                                        Skill Gaps
+                                    </h4>
+
+                                    {project.skillGaps.length === 0 ? (
+                                        <p>No major skill gaps.</p>
+                                    ) : (
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                flexWrap: "wrap",
+                                                gap: "8px",
+                                            }}
+                                        >
+                                            {project.skillGaps.map(
+                                                (skill, skillIndex) => (
+                                                    <span
+                                                        key={skillIndex}
+                                                        style={{
+                                                            padding:
+                                                                "6px 10px",
+                                                            border: "1px solid #b45309",
+                                                            borderRadius:
+                                                                "20px",
+                                                            fontSize:
+                                                                "14px",
+                                                        }}
+                                                    >
+                                                        {skill}
+                                                    </span>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* WHAT YOU WILL LEARN */}
+                                <div style={{ marginTop: "20px" }}>
+                                    <h4>You Will Learn</h4>
+
+                                    <ul>
+                                        {project.youWillLearn.map(
+                                            (item, itemIndex) => (
+                                                <li key={itemIndex}>
+                                                    {item}
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* RESUME SKILLS */}
+                                <div style={{ marginTop: "20px" }}>
+                                    <h4>Resume Skills</h4>
+
+                                    <ul>
+                                        {project.resumeSkills.map(
+                                            (skill, skillIndex) => (
+                                                <li key={skillIndex}>
+                                                    {skill}
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* TECHNOLOGIES */}
+                                <div style={{ marginTop: "20px" }}>
                                     <strong>Technologies:</strong>
 
                                     <ul>
                                         {project.technologies.map(
-                                            (technology, technologyIndex) => (
-                                                <li key={technologyIndex}>
+                                            (
+                                                technology,
+                                                technologyIndex
+                                            ) => (
+                                                <li
+                                                    key={technologyIndex}
+                                                >
                                                     {technology}
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* PREREQUISITES */}
+                                <div style={{ marginTop: "20px" }}>
+                                    <h4>Prerequisites</h4>
+
+                                    <ul>
+                                        {project.prerequisites.map(
+                                            (
+                                                prerequisite,
+                                                prerequisiteIndex
+                                            ) => (
+                                                <li
+                                                    key={
+                                                        prerequisiteIndex
+                                                    }
+                                                >
+                                                    {prerequisite}
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                </div>
+
+                                {/* STRETCH GOALS */}
+                                <div style={{ marginTop: "20px" }}>
+                                    <h4>Stretch Goals</h4>
+
+                                    <ul>
+                                        {project.stretchGoals.map(
+                                            (
+                                                goal,
+                                                goalIndex
+                                            ) => (
+                                                <li key={goalIndex}>
+                                                    {goal}
                                                 </li>
                                             )
                                         )}
@@ -260,6 +418,7 @@ export default function Dashboard() {
                 )}
             </div>
 
+            {/* EDIT PROFILE */}
             <div style={{ marginTop: "30px" }}>
                 <Link to="/profile">
                     <button

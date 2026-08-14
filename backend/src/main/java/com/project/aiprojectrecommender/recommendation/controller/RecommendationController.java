@@ -1,5 +1,6 @@
 package com.project.aiprojectrecommender.recommendation.controller;
 
+import com.project.aiprojectrecommender.recommendation.dto.RecommendationResponse;
 import com.project.aiprojectrecommender.recommendation.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -15,12 +16,10 @@ public class RecommendationController {
     private final RecommendationService recommendationService;
 
     @GetMapping("/me")
-    public String recommend(Authentication authentication) {
+    public RecommendationResponse recommend(Authentication authentication) {
 
         String email = authentication.getName();
 
         return recommendationService.recommendProjects(email);
-
     }
-
-} 
+}

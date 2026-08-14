@@ -1,10 +1,12 @@
 package com.project.aiprojectrecommender.recommendation.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.aiprojectrecommender.entity.User;
 import com.project.aiprojectrecommender.entity.UserProfile;
 import com.project.aiprojectrecommender.entity.UserSkill;
 import com.project.aiprojectrecommender.llm.service.GeminiService;
 import com.project.aiprojectrecommender.llm.util.PromptBuilder;
+import com.project.aiprojectrecommender.recommendation.dto.RecommendationResponse;
 import com.project.aiprojectrecommender.repository.UserProfileRepository;
 import com.project.aiprojectrecommender.repository.UserRepository;
 import com.project.aiprojectrecommender.repository.UserSkillRepository;
@@ -23,8 +25,9 @@ public class RecommendationService {
 
     private final PromptBuilder promptBuilder;
     private final GeminiService geminiService;
+    private final ObjectMapper objectMapper;
 
-    public String recommendProjects(String email) {
+    public RecommendationResponse recommendProjects(String email) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found."));
@@ -36,8 +39,18 @@ public class RecommendationService {
 
         String prompt = promptBuilder.buildPrompt(profile, userSkills);
 
-        return geminiService.generate(prompt);
+        String geminiOutput = geminiService.generate(prompt);
 
+        try {
+            return objectMapper.readValue(
+                    geminiOutput,
+                    RecommendationResponse.class
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to parse Gemini recommendation response.",
+                    e
+            );
+        }
     }
-
 }

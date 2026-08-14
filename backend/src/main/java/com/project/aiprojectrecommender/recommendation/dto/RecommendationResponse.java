@@ -18,14 +18,28 @@ public class RecommendationResponse {
         private String title;
         private String description;
         private String difficulty;
-        private String estimatedTime;
-        private String whyThisProject;
-        private String resumeValue;
-        private String learningOutcome;
+        private boolean isStretch;
+
+        private EstimatedTime estimatedTime;
+        private String feasibilitySummary;
+
+        private List<String> whyItFits;
+        private List<String> resumeSkills;
+        private List<String> youWillLearn;
 
         private List<String> technologies;
-        private List<String> skillsToLearn;
+        private List<String> existingSkills;
+        private List<String> skillGaps;
         private List<String> prerequisites;
         private List<String> stretchGoals;
+    }
+
+    @Getter
+    @Setter
+    public static class EstimatedTime {
+
+        private Integer learningHours;
+        private Integer buildHours;
+        private Integer totalWeeks;
     }
 }
