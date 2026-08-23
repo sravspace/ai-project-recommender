@@ -20,7 +20,6 @@ public class SkillController {
     public List<SkillResponse> getAllSkills() {
 
         return skillService.getAllSkills();
-
     }
 
     @PostMapping
@@ -29,7 +28,13 @@ public class SkillController {
             @RequestBody SkillRequest request) {
 
         return skillService.createSkill(request);
-
     }
 
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    public List<SkillResponse> createSkills(
+            @RequestBody List<SkillRequest> requests) {
+
+        return skillService.createSkillsBulk(requests);
+    }
 }

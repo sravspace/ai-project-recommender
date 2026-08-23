@@ -25,7 +25,6 @@ public class SkillService {
                         .category(skill.getCategory())
                         .build())
                 .toList();
-
     }
 
     public SkillResponse createSkill(SkillRequest request) {
@@ -46,7 +45,15 @@ public class SkillService {
                 .name(skill.getName())
                 .category(skill.getCategory())
                 .build();
-
     }
 
+    public List<SkillResponse> createSkillsBulk(
+            List<SkillRequest> requests) {
+
+        return requests.stream()
+                .filter(request ->
+                        !skillRepository.existsByName(request.getName()))
+                .map(this::createSkill)
+                .toList();
+    }
 }

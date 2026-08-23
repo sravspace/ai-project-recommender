@@ -1,0 +1,25 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap");
+
+.login-page { min-height: 100vh; display: grid; grid-template-columns: minmax(360px, 1fr) minmax(440px, 1fr); background: #fcf9f2; color: #1c2b25; font-family: "DM Sans", sans-serif; }
+.login-showcase { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: clamp(2rem, 7vw, 5.5rem); color: #fffdf7; background: #254f46; }
+.login-showcase::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .32; background-image: linear-gradient(135deg, transparent 49%, rgba(232,193,118,.35) 50%, transparent 51%), radial-gradient(circle at 78% 20%, rgba(215,177,104,.24), transparent 28%), radial-gradient(circle at 9% 86%, rgba(163,208,196,.18), transparent 24%); background-size: 58px 58px, auto, auto; }
+.login-brand, .login-mobile-brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; letter-spacing: -.02em; }
+.login-brand span, .login-mobile-brand span { color: #e8c176; font-size: 1.35rem; }
+.login-message { max-width: 35rem; margin: auto 0; }
+.login-kicker { margin: 0 0 .8rem; color: #c9a45c; font-size: .68rem; font-weight: 700; letter-spacing: .16em; }
+.login-message h1, .login-card h2 { margin: 0; font-family: "Playfair Display", Georgia, serif; letter-spacing: -.035em; }
+.login-message h1 { max-width: 34rem; font-size: clamp(2.6rem, 5vw, 4.7rem); line-height: 1.04; }
+.login-message ul { padding: 0; margin: 2.5rem 0 0; list-style: none; color: #d5ebe3; line-height: 2.1; }
+.login-message li::before { content: "✦"; color: #e8c176; margin-right: .7rem; font-size: .75rem; }
+.login-copyright { margin: 0; color: #b7d2c8; font-size: .74rem; }
+.login-panel { display: grid; place-items: center; padding: 2rem; background: linear-gradient(140deg, #fcf9f2, #f4f0e6); }
+.login-card { width: min(100%, 27rem); display: grid; gap: .68rem; padding: clamp(2rem, 5vw, 3.6rem); background: rgba(255,255,255,.72); border: 1px solid rgba(112,151,138,.28); border-radius: 1.25rem; box-shadow: 0 22px 55px rgba(37,79,70,.12); }
+.login-mobile-brand { display: none; color: #254f46; margin-bottom: 1.2rem; }
+.login-card h2 { color: #254f46; font-size: 2.15rem; line-height: 1.1; }
+.login-subtitle { margin: .65rem 0 1.5rem; color: #65706a; font-size: .92rem; line-height: 1.55; }
+.login-card label { color: #31423b; font-size: .77rem; font-weight: 700; letter-spacing: .04em; }
+.login-card input { box-sizing: border-box; width: 100%; padding: .86rem .95rem; border: 1px solid #bad0c6; border-radius: .5rem; background: #fffdf9; color: #1c2b25; font: inherit; outline: none; transition: border-color .2s, box-shadow .2s; }
+.login-card input:focus { border-color: #254f46; box-shadow: 0 0 0 3px rgba(215,177,104,.27); }
+.login-card button { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1rem; border: 0; border-bottom: 3px solid #c9a45c; border-radius: .5rem; padding: .92rem 1rem; background: #254f46; color: #fffdf7; cursor: pointer; font: 700 .88rem "DM Sans", sans-serif; transition: background .2s, transform .2s; }
+.login-card button:hover { background: #173f36; transform: translateY(-1px); }
+@media (max-width: 760px) { .login-page { grid-template-columns: 1fr; } .login-showcase { display: none; } .login-panel { min-height: 100vh; } .login-mobile-brand { display: flex; } }
