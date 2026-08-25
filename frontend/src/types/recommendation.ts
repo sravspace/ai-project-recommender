@@ -5,6 +5,8 @@ export interface EstimatedTime {
 }
 
 export interface ProjectRecommendation {
+    id: number;
+
     title: string;
     description: string;
     difficulty: string;

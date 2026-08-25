@@ -15,6 +15,8 @@ public class RecommendationResponse {
     @Setter
     public static class ProjectRecommendation {
 
+        private Long id;
+
         private String title;
         private String description;
         private String difficulty;

@@ -2,6 +2,7 @@ package com.project.aiprojectrecommender.recommendation.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.aiprojectrecommender.entity.ActiveProject;
 import com.project.aiprojectrecommender.entity.ProjectRecommendation;
 import com.project.aiprojectrecommender.entity.User;
 import com.project.aiprojectrecommender.entity.UserProfile;
@@ -9,6 +10,7 @@ import com.project.aiprojectrecommender.entity.UserSkill;
 import com.project.aiprojectrecommender.llm.service.GeminiService;
 import com.project.aiprojectrecommender.llm.util.PromptBuilder;
 import com.project.aiprojectrecommender.recommendation.dto.RecommendationResponse;
+import com.project.aiprojectrecommender.repository.ActiveProjectRepository;
 import com.project.aiprojectrecommender.repository.ProjectRecommendationRepository;
 import com.project.aiprojectrecommender.repository.UserProfileRepository;
 import com.project.aiprojectrecommender.repository.UserRepository;
@@ -28,6 +30,7 @@ public class RecommendationService {
     private final UserProfileRepository userProfileRepository;
     private final UserSkillRepository userSkillRepository;
     private final ProjectRecommendationRepository projectRecommendationRepository;
+    private final ActiveProjectRepository activeProjectRepository;
 
     private final PromptBuilder promptBuilder;
     private final GeminiService geminiService;
@@ -37,7 +40,9 @@ public class RecommendationService {
     public RecommendationResponse recommendProjects(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found."));
+                .orElseThrow(() ->
+                        new RuntimeException("User not found.")
+                );
 
         // ---------------------------------------------------------
         // STEP 1: Check whether recommendations already exist
@@ -49,21 +54,29 @@ public class RecommendationService {
 
         if (!savedRecommendations.isEmpty()) {
 
-            return buildResponseFromDatabase(savedRecommendations);
+            return buildResponseFromDatabase(
+                    savedRecommendations
+            );
         }
 
         // ---------------------------------------------------------
         // STEP 2: No saved recommendations -> call Gemini
         // ---------------------------------------------------------
 
-        UserProfile profile = userProfileRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Profile not found."));
+        UserProfile profile =
+                userProfileRepository.findByUser(user)
+                        .orElseThrow(() ->
+                                new RuntimeException("Profile not found.")
+                        );
 
         List<UserSkill> userSkills =
                 userSkillRepository.findByUser(user);
 
         String prompt =
-                promptBuilder.buildPrompt(profile, userSkills);
+                promptBuilder.buildPrompt(
+                        profile,
+                        userSkills
+                );
 
         String geminiOutput =
                 geminiService.generate(prompt);
@@ -97,6 +110,10 @@ public class RecommendationService {
         }
     }
 
+    // -------------------------------------------------------------
+    // SAVE RECOMMENDATIONS
+    // -------------------------------------------------------------
+
     private void saveRecommendations(
             User user,
             RecommendationResponse response) {
@@ -105,13 +122,17 @@ public class RecommendationService {
             return;
         }
 
-        for (RecommendationResponse.ProjectRecommendation recommendation
-                : response.getProjects()) {
+        for (
+                RecommendationResponse.ProjectRecommendation recommendation
+                : response.getProjects()
+        ) {
 
             try {
 
                 String recommendationJson =
-                        objectMapper.writeValueAsString(recommendation);
+                        objectMapper.writeValueAsString(
+                                recommendation
+                        );
 
                 ProjectRecommendation entity =
                         ProjectRecommendation.builder()
@@ -121,7 +142,10 @@ public class RecommendationService {
                                 .createdAt(LocalDateTime.now())
                                 .build();
 
-                projectRecommendationRepository.save(entity);
+                entity =
+                        projectRecommendationRepository.save(entity);
+
+                recommendation.setId(entity.getId());
 
             } catch (JsonProcessingException e) {
 
@@ -132,6 +156,10 @@ public class RecommendationService {
             }
         }
     }
+
+    // -------------------------------------------------------------
+    // BUILD RESPONSE FROM DATABASE
+    // -------------------------------------------------------------
 
     private RecommendationResponse buildResponseFromDatabase(
             List<ProjectRecommendation> savedRecommendations) {
@@ -145,10 +173,19 @@ public class RecommendationService {
 
                             try {
 
-                                return objectMapper.readValue(
-                                        saved.getRecommendationData(),
-                                        RecommendationResponse.ProjectRecommendation.class
+                                RecommendationResponse.ProjectRecommendation
+                                        recommendation =
+                                        objectMapper.readValue(
+                                                saved.getRecommendationData(),
+                                                RecommendationResponse
+                                                        .ProjectRecommendation.class
+                                        );
+
+                                recommendation.setId(
+                                        saved.getId()
                                 );
+
+                                return recommendation;
 
                             } catch (JsonProcessingException e) {
 
@@ -164,5 +201,125 @@ public class RecommendationService {
         response.setProjects(projects);
 
         return response;
+    }
+
+    // -------------------------------------------------------------
+    // SELECT ACTIVE PROJECT
+    // -------------------------------------------------------------
+
+    @Transactional
+    public void selectProject(
+            String email,
+            Long recommendationId) {
+
+        User user =
+                userRepository.findByEmail(email)
+                        .orElseThrow(() ->
+                                new RuntimeException("User not found.")
+                        );
+
+        ProjectRecommendation recommendation =
+                projectRecommendationRepository
+                        .findById(recommendationId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Recommendation not found."
+                                )
+                        );
+
+        // ---------------------------------------------------------
+        // Security check:
+        // A user can only select their own recommendation.
+        // ---------------------------------------------------------
+
+        if (!recommendation.getUser().getId()
+                .equals(user.getId())) {
+
+            throw new RuntimeException(
+                    "You cannot select another user's recommendation."
+            );
+        }
+
+        // ---------------------------------------------------------
+        // Find existing active project
+        // ---------------------------------------------------------
+
+        ActiveProject activeProject =
+                activeProjectRepository
+                        .findByUser(user)
+                        .orElse(null);
+
+        if (activeProject == null) {
+
+            activeProject =
+                    ActiveProject.builder()
+                            .user(user)
+                            .recommendation(recommendation)
+                            .selectedAt(LocalDateTime.now())
+                            .build();
+
+        } else {
+
+            activeProject.setRecommendation(
+                    recommendation
+            );
+
+            activeProject.setSelectedAt(
+                    LocalDateTime.now()
+            );
+        }
+
+        activeProjectRepository.save(activeProject);
+    }
+
+    // -------------------------------------------------------------
+    // GET ACTIVE PROJECT
+    // -------------------------------------------------------------
+
+    @Transactional(readOnly = true)
+    public RecommendationResponse.ProjectRecommendation getActiveProject(
+            String email) {
+
+        User user =
+                userRepository.findByEmail(email)
+                        .orElseThrow(() ->
+                                new RuntimeException("User not found.")
+                        );
+
+        ActiveProject activeProject =
+                activeProjectRepository
+                        .findByUser(user)
+                        .orElse(null);
+
+        if (activeProject == null) {
+            return null;
+        }
+
+        try {
+
+            RecommendationResponse.ProjectRecommendation recommendation =
+                    objectMapper.readValue(
+                            activeProject
+                                    .getRecommendation()
+                                    .getRecommendationData(),
+                            RecommendationResponse
+                                    .ProjectRecommendation.class
+                    );
+
+            recommendation.setId(
+                    activeProject
+                            .getRecommendation()
+                            .getId()
+            );
+
+            return recommendation;
+
+        } catch (JsonProcessingException e) {
+
+            throw new RuntimeException(
+                    "Failed to read active project.",
+                    e
+            );
+        }
     }
 }

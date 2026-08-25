@@ -21,17 +21,27 @@ interface Profile {
 
 export default function Dashboard() {
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [recommendations, setRecommendations] = useState<ProjectRecommendation[]>([]);
+
+    const [recommendations, setRecommendations] =
+        useState<ProjectRecommendation[]>([]);
+
     const [loading, setLoading] = useState(true);
-    const [recommendationLoading, setRecommendationLoading] = useState(true);
+
+    const [recommendationLoading, setRecommendationLoading] =
+        useState(true);
+
+    const [selectedProjectId, setSelectedProjectId] =
+        useState<number | null>(null);
+
+    const [selectingProjectId, setSelectingProjectId] =
+        useState<number | null>(null);
 
     const hasFetched = useRef(false);
 
     useEffect(() => {
+
         async function fetchData() {
 
-            // Prevent duplicate API calls caused by
-            // React StrictMode during development.
             if (hasFetched.current) {
                 return;
             }
@@ -39,29 +49,84 @@ export default function Dashboard() {
             hasFetched.current = true;
 
             try {
-                const profileResponse = await api.get("/profile/me");
+
+                const profileResponse =
+                    await api.get("/profile/me");
+
                 setProfile(profileResponse.data);
 
                 const recommendationResponse =
-                    await api.get<RecommendationResponse>("/recommendations/me");
+                    await api.get<RecommendationResponse>(
+                        "/recommendations/me"
+                    );
 
                 setRecommendations(
                     recommendationResponse.data.projects
                 );
 
+                const activeProjectResponse =
+                    await api.get<ProjectRecommendation | null>(
+                        "/recommendations/active"
+                    );
+
+                if (activeProjectResponse.data) {
+
+                    setSelectedProjectId(
+                        activeProjectResponse.data.id
+                    );
+                }
+
             } catch (error) {
+
                 console.error(error);
 
             } finally {
+
                 setLoading(false);
                 setRecommendationLoading(false);
+
             }
         }
 
         fetchData();
+
     }, []);
 
+    async function handleSelectProject(
+        recommendationId: number
+    ) {
+
+        try {
+
+            setSelectingProjectId(
+                recommendationId
+            );
+
+            await api.post(
+                `/recommendations/select/${recommendationId}`
+            );
+
+            setSelectedProjectId(
+                recommendationId
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Failed to select project. Please try again."
+            );
+
+        } finally {
+
+            setSelectingProjectId(null);
+
+        }
+    }
+
     if (loading) {
+
         return (
             <main className="dashboard-state">
                 Curating your project space…
@@ -70,6 +135,7 @@ export default function Dashboard() {
     }
 
     if (!profile) {
+
         return (
             <main className="dashboard-state">
                 Failed to load profile.
@@ -78,9 +144,12 @@ export default function Dashboard() {
     }
 
     if (!profile.profileCompleted) {
+
         return (
             <main className="dashboard-state">
+
                 <section className="dashboard-empty-card">
+
                     <p className="dashboard-eyebrow">
                         PROJECTPATH AI
                     </p>
@@ -90,17 +159,21 @@ export default function Dashboard() {
                     </h1>
 
                     <p>
-                        Tell us about your skills, goals, and interests
-                        so we can recommend work that fits you.
+                        Tell us about your skills, goals, and
+                        interests so we can recommend work that
+                        fits you.
                     </p>
 
                     <Link
                         className="dashboard-button"
                         to="/profile"
                     >
-                        Complete profile <span>→</span>
+                        Complete profile
+                        <span>→</span>
                     </Link>
+
                 </section>
+
             </main>
         );
     }
@@ -114,11 +187,14 @@ export default function Dashboard() {
             profile.goals,
             profile.interests,
             profile.timeAvailability,
-            profile.githubUrl || profile.linkedinUrl
+            profile.githubUrl ||
+            profile.linkedinUrl
         ].filter(Boolean).length;
 
     const profileStrengthLabel =
-        `${Math.round((profileStrength / 5) * 100)}%`;
+        `${Math.round(
+            (profileStrength / 5) * 100
+        )}%`;
 
     return (
         <main className="dashboard-page terracotta-dashboard">
@@ -129,10 +205,12 @@ export default function Dashboard() {
                     className="dashboard-brand"
                     to="/dashboard"
                 >
-                    <span>✦</span> ProjectPath AI
+                    <span>✦</span>
+                    ProjectPath AI
                 </Link>
 
                 <nav>
+
                     <Link
                         className="active"
                         to="/dashboard"
@@ -143,6 +221,7 @@ export default function Dashboard() {
                     <Link to="/profile">
                         Profile
                     </Link>
+
                 </nav>
 
                 <Link
@@ -150,7 +229,9 @@ export default function Dashboard() {
                     to="/profile"
                     aria-label="Edit profile"
                 >
-                    {firstName.slice(0, 1).toUpperCase()}
+                    {firstName
+                        .slice(0, 1)
+                        .toUpperCase()}
                 </Link>
 
             </header>
@@ -179,6 +260,7 @@ export default function Dashboard() {
                 >
 
                     <article>
+
                         <span className="metric-icon">
                             ✦
                         </span>
@@ -197,9 +279,11 @@ export default function Dashboard() {
                                 : "Your profile is ready to guide recommendations."
                             }
                         </small>
+
                     </article>
 
                     <article>
+
                         <span className="metric-icon">
                             ◌
                         </span>
@@ -215,9 +299,11 @@ export default function Dashboard() {
                         <small>
                             Projects are tailored to your level.
                         </small>
+
                     </article>
 
                     <article>
+
                         <span className="metric-icon">
                             ↗
                         </span>
@@ -233,6 +319,7 @@ export default function Dashboard() {
                         <small>
                             Based on your goals and interests.
                         </small>
+
                     </article>
 
                 </section>
@@ -279,11 +366,24 @@ export default function Dashboard() {
                             <div className="project-list">
 
                                 {recommendations.map(
-                                    (project, index) => (
+                                    (project) => (
+
                                         <ProjectCard
-                                            key={index}
+                                            key={project.id}
                                             project={project}
+                                            selected={
+                                                selectedProjectId ===
+                                                project.id
+                                            }
+                                            selecting={
+                                                selectingProjectId ===
+                                                project.id
+                                            }
+                                            onSelect={
+                                                handleSelectProject
+                                            }
                                         />
+
                                     )
                                 )}
 
@@ -308,6 +408,7 @@ export default function Dashboard() {
                             <dl>
 
                                 <div>
+
                                     <dt>
                                         Goals
                                     </dt>
@@ -316,9 +417,11 @@ export default function Dashboard() {
                                         {profile.goals ||
                                             "Add your goals"}
                                     </dd>
+
                                 </div>
 
                                 <div>
+
                                     <dt>
                                         Interests
                                     </dt>
@@ -327,9 +430,11 @@ export default function Dashboard() {
                                         {profile.interests ||
                                             "Add your interests"}
                                     </dd>
+
                                 </div>
 
                                 <div>
+
                                     <dt>
                                         Availability
                                     </dt>
@@ -338,6 +443,7 @@ export default function Dashboard() {
                                         {profile.timeAvailability ||
                                             "Add your availability"}
                                     </dd>
+
                                 </div>
 
                             </dl>
@@ -414,13 +520,26 @@ export default function Dashboard() {
 }
 
 function ProjectCard({
-    project
+    project,
+    selected,
+    selecting,
+    onSelect
 }: {
     project: ProjectRecommendation;
+    selected: boolean;
+    selecting: boolean;
+    onSelect: (id: number) => void;
 }) {
 
     return (
-        <article className="project-card">
+
+        <article
+            className={`project-card ${
+                selected
+                    ? "project-card-selected"
+                    : ""
+            }`}
+        >
 
             <div className="project-card-top">
 
@@ -465,9 +584,11 @@ function ProjectCard({
 
                 {project.technologies.map(
                     (technology, index) => (
+
                         <span key={index}>
                             {technology}
                         </span>
+
                     )
                 )}
 
@@ -485,9 +606,11 @@ function ProjectCard({
 
                         {project.whyItFits.map(
                             (reason, index) => (
+
                                 <li key={index}>
                                     {reason}
                                 </li>
+
                             )
                         )}
 
@@ -505,9 +628,11 @@ function ProjectCard({
 
                         {project.youWillLearn.map(
                             (item, index) => (
+
                                 <li key={index}>
                                     {item}
                                 </li>
+
                             )
                         )}
 
@@ -539,9 +664,11 @@ function ProjectCard({
 
                         {project.skillGaps.map(
                             (skill, index) => (
+
                                 <span key={index}>
                                     {skill}
                                 </span>
+
                             )
                         )}
 
@@ -578,6 +705,30 @@ function ProjectCard({
 
             </details>
 
+            <div className="project-selection">
+
+                <button
+                    type="button"
+                    className={`select-project-button ${
+                        selected
+                            ? "selected"
+                            : ""
+                    }`}
+                    onClick={() =>
+                        onSelect(project.id)
+                    }
+                    disabled={selecting}
+                >
+                    {selecting
+                        ? "Selecting..."
+                        : selected
+                            ? "Selected ✓"
+                            : "Select Project"
+                    }
+                </button>
+
+            </div>
+
         </article>
     );
 }
@@ -591,6 +742,7 @@ function ListBlock({
 }) {
 
     return (
+
         <section>
 
             <h4>
@@ -601,9 +753,11 @@ function ListBlock({
 
                 {items.map(
                     (item, index) => (
+
                         <li key={index}>
                             {item}
                         </li>
+
                     )
                 )}
 
