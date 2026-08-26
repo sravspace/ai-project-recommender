@@ -1,7 +1,11 @@
 package com.project.aiprojectrecommender.recommendation.controller;
 
+import com.project.aiprojectrecommender.entity.ActiveProject;
+import com.project.aiprojectrecommender.entity.User;
+import com.project.aiprojectrecommender.recommendation.dto.ActiveProjectResponse;
 import com.project.aiprojectrecommender.recommendation.dto.RecommendationResponse;
 import com.project.aiprojectrecommender.recommendation.service.RecommendationService;
+import com.project.aiprojectrecommender.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
+    private final UserRepository userRepository;
 
     @GetMapping("/me")
     public RecommendationResponse recommend(
@@ -38,11 +43,41 @@ public class RecommendationController {
     }
 
     @GetMapping("/active")
-    public RecommendationResponse.ProjectRecommendation getActiveProject(
+    public ActiveProjectResponse getActiveProject(
             Authentication authentication) {
 
         String email = authentication.getName();
 
-        return recommendationService.getActiveProject(email);
+        User user =
+                userRepository.findByEmail(email)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found."
+                                )
+                        );
+
+        ActiveProject activeProject =
+                recommendationService.findActiveProject(user);
+
+        if (activeProject == null) {
+            return null;
+        }
+
+        return ActiveProjectResponse.builder()
+                .id(activeProject.getId())
+                .recommendationId(
+                        activeProject
+                                .getRecommendation()
+                                .getId()
+                )
+                .title(
+                        activeProject
+                                .getRecommendation()
+                                .getTitle()
+                )
+                .selectedAt(
+                        activeProject.getSelectedAt()
+                )
+                .build();
     }
 }

@@ -273,53 +273,14 @@ public class RecommendationService {
     }
 
     // -------------------------------------------------------------
-    // GET ACTIVE PROJECT
+    // FIND ACTIVE PROJECT
     // -------------------------------------------------------------
 
     @Transactional(readOnly = true)
-    public RecommendationResponse.ProjectRecommendation getActiveProject(
-            String email) {
+    public ActiveProject findActiveProject(User user) {
 
-        User user =
-                userRepository.findByEmail(email)
-                        .orElseThrow(() ->
-                                new RuntimeException("User not found.")
-                        );
-
-        ActiveProject activeProject =
-                activeProjectRepository
-                        .findByUser(user)
-                        .orElse(null);
-
-        if (activeProject == null) {
-            return null;
-        }
-
-        try {
-
-            RecommendationResponse.ProjectRecommendation recommendation =
-                    objectMapper.readValue(
-                            activeProject
-                                    .getRecommendation()
-                                    .getRecommendationData(),
-                            RecommendationResponse
-                                    .ProjectRecommendation.class
-                    );
-
-            recommendation.setId(
-                    activeProject
-                            .getRecommendation()
-                            .getId()
-            );
-
-            return recommendation;
-
-        } catch (JsonProcessingException e) {
-
-            throw new RuntimeException(
-                    "Failed to read active project.",
-                    e
-            );
-        }
+        return activeProjectRepository
+                .findByUser(user)
+                .orElse(null);
     }
 }
